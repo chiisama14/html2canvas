@@ -46,8 +46,11 @@ import {overflowWrap} from './property-descriptors/overflow-wrap';
 import {paddingBottom, paddingLeft, paddingRight, paddingTop} from './property-descriptors/padding';
 import {textAlign} from './property-descriptors/text-align';
 import {position, POSITION} from './property-descriptors/position';
+import {textFillColor} from './property-descriptors/text-fill-color';
 import {textShadow} from './property-descriptors/text-shadow';
 import {textTransform} from './property-descriptors/text-transform';
+import {textStrokeColor} from './property-descriptors/text-stroke-color';
+import {textStrokeWidth} from './property-descriptors/text-stroke-width';
 import {transform} from './property-descriptors/transform';
 import {transformOrigin} from './property-descriptors/transform-origin';
 import {visibility, VISIBILITY} from './property-descriptors/visibility';
@@ -76,6 +79,7 @@ import {counterReset} from './property-descriptors/counter-reset';
 import {duration} from './property-descriptors/duration';
 import {quotes} from './property-descriptors/quotes';
 import {boxShadow} from './property-descriptors/box-shadow';
+import {filter} from './property-descriptors/filter';
 import {paintOrder} from './property-descriptors/paint-order';
 import {webkitTextStrokeColor} from './property-descriptors/webkit-text-stroke-color';
 import {webkitTextStrokeWidth} from './property-descriptors/webkit-text-stroke-width';
@@ -110,6 +114,8 @@ export class CSSParsedDeclaration {
     color: Color;
     direction: ReturnType<typeof direction.parse>;
     display: ReturnType<typeof display.parse>;
+    filter: ReturnType<typeof filter.parse>;
+    filterOriginal: string | null;
     float: ReturnType<typeof float.parse>;
     fontFamily: ReturnType<typeof fontFamily.parse>;
     fontSize: LengthPercentage;
@@ -137,10 +143,13 @@ export class CSSParsedDeclaration {
     paintOrder: ReturnType<typeof paintOrder.parse>;
     position: ReturnType<typeof position.parse>;
     textAlign: ReturnType<typeof textAlign.parse>;
+    textFillColor: Color;
     textDecorationColor: Color;
     textDecorationLine: ReturnType<typeof textDecorationLine.parse>;
     textShadow: ReturnType<typeof textShadow.parse>;
     textTransform: ReturnType<typeof textTransform.parse>;
+    textStrokeColor: Color;
+    textStrokeWidth: LengthPercentage;
     transform: ReturnType<typeof transform.parse>;
     transformOrigin: ReturnType<typeof transformOrigin.parse>;
     visibility: ReturnType<typeof visibility.parse>;
@@ -178,6 +187,8 @@ export class CSSParsedDeclaration {
         this.color = parse(context, color, declaration.color);
         this.direction = parse(context, direction, declaration.direction);
         this.display = parse(context, display, declaration.display);
+        this.filter = parse(context, filter, declaration.filter);
+        this.filterOriginal = declaration.filter;
         this.float = parse(context, float, declaration.cssFloat);
         this.fontFamily = parse(context, fontFamily, declaration.fontFamily);
         this.fontSize = parse(context, fontSize, declaration.fontSize);
@@ -206,6 +217,7 @@ export class CSSParsedDeclaration {
         this.paintOrder = parse(context, paintOrder, declaration.paintOrder);
         this.position = parse(context, position, declaration.position);
         this.textAlign = parse(context, textAlign, declaration.textAlign);
+        this.textFillColor = parse(context, textFillColor, declaration.textFillColor);
         this.textDecorationColor = parse(
             context,
             textDecorationColor,
@@ -218,6 +230,8 @@ export class CSSParsedDeclaration {
         );
         this.textShadow = parse(context, textShadow, declaration.textShadow);
         this.textTransform = parse(context, textTransform, declaration.textTransform);
+        this.textStrokeColor = parse(context, textStrokeColor, declaration.webkitTextStrokeColor);
+        this.textStrokeWidth = parse(context, textStrokeWidth, declaration.webkitTextStrokeWidth);
         this.transform = parse(context, transform, declaration.transform);
         this.transformOrigin = parse(context, transformOrigin, declaration.transformOrigin);
         this.visibility = parse(context, visibility, declaration.visibility);
@@ -286,7 +300,7 @@ export class CSSParsedCounterDeclaration {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const parse = (context: Context, descriptor: CSSPropertyDescriptor<any>, style?: string | null) => {
     const tokenizer = new Tokenizer();
-    const value = style !== null && typeof style !== 'undefined' ? style.toString() : descriptor.initialValue;
+    const value = style !== null && typeof style !== 'undefined' && style != '' ? style.toString() : descriptor.initialValue;
     tokenizer.write(value);
     const parser = new Parser(tokenizer.read());
     switch (descriptor.type) {
